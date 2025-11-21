@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Опитування студентів IT-спеціальностей</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            color: #2c3e50;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2.2em;
+            margin-bottom: 10px;
+        }
+        
+        .lottery-code {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+            border: 3px solid #f0c420;
+        }
+        
+        .lottery-code h3 {
+            color: #5c4a1a;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+        
+        .lottery-code .code {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #5c4a1a;
+            letter-spacing: 3px;
+        }
+        
+        .survey-section {
+            margin-bottom: 40px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+        }
+        
+        .survey-section h3 {
+            color: #2c3e50;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+        }
+        
+        .question-block {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            transition: border 0.3s ease;
+        }
+        
+        .question-block.unanswered {
+            border: 2px solid #f8d7da;
+            background: #fff5f5;
+        }
+        
+        .question-label {
+            display: block;
+            font-weight: 600;
+            color: #34495e;
+            margin-bottom: 12px;
+            font-size: 15px;
+        }
+        
+        .radio-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 12px;
+        }
+        
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 15px;
+            border-radius: 5px;
+            background: white;
+            border: 2px solid #dee2e6;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex: 1;
+            min-width: 120px;
+        }
+        
+        .radio-option:hover {
+            background: #e7f1ff;
+            border-color: #667eea;
+        }
+        
+        .radio-option input[type="radio"] {
+            margin: 0;
+            cursor: pointer;
+        }
+        
+        .radio-option label {
+            cursor: pointer;
+            font-size: 14px;
+            color: #555;
+            margin: 0;
+        }
+        
+        .radio-option input[type="radio"]:checked + label {
+            color: #667eea;
+            font-weight: 600;
+        }
+        
+        .submit-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 30px auto;
+            display: block;
+        }
+        
+        .results-section {
+            margin-top: 40px;
+            padding: 30px;
+            background: white;
+            border-radius: 10px;
+            display: none;
+        }
+        
+        .results-section.visible { display: block; }
+        
+        .result-card {
+            background: #f8f9fa;
+            padding: 25px;
+            margin: 20px 0;
+            border-radius: 10px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .result-card h3 {
+            color: #2c3e50;
+            font-size: 1.4em;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .score-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            display: block;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .score-table table {
+            width: 100%;
+            min-width: 500px;
+        }
+        
+        .score-table thead {
+            display: table-header-group;
+        }
+        
+        .score-table tbody {
+            display: table-row-group;
+        }
+        
+        .score-table th,
+        .score-table td {
+            padding: 12px 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .score-table th {
+            background-color: #667eea;
+            color: white;
+            font-weight: 600;
+            font-size: 13px;
+        }
+        
+        .score-table td {
+            font-size: 13px;
+        }
+        
+        .comparison {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 11px;
+        }
+        
+        .above-avg {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .below-avg {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .average {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .radar-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin: 30px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+        }
+        
+        .radar-container canvas {
+            max-height: 400px !important;
+        }
+        
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 14px;
+            display: block;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .comparison-table table {
+            width: 100%;
+            min-width: 400px;
+        }
+        
+        .comparison-table th,
+        .comparison-table td {
+            padding: 10px 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .comparison-table th {
+            background-color: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .stress-low {
+            background: #d4edda;
+            color: #155724;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        
+        .stress-high {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        
+        .profile-description {
+            background: #e8f4f8;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #3498db;
+            font-size: 14px;
+        }
+        
+        .strength-box {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 18px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #28a745;
+        }
+        
+        .warning-box {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 18px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .disclaimer {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 30px 0;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        
+        .disclaimer h4 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .print-button {
+            background: #6c757d;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 20px auto;
+            display: block;
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+            
+            .radio-group {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .radio-option {
+                min-width: 100%;
+            }
+            
+            .header h1 {
+                font-size: 1.6em;
+            }
+            
+            .lottery-code .code {
+                font-size: 1.8em;
+            }
+            
+            .score-table,
+            .comparison-table {
+                font-size: 12px;
+            }
+            
+            .score-table th,
+            .score-table td,
+            .comparison-table th,
+            .comparison-table td {
+                padding: 8px 4px;
+                font-size: 11px;
+            }
+            
+            .radar-container {
+                padding: 10px;
+            }
+            
+            .result-card {
+                padding: 15px;
+            }
+            
+            .result-card h3 {
+                font-size: 1.2em;
+            }
+            
+            .question-label {
+                font-size: 14px;
+            }
+        }
+        
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .container {
+                box-shadow: none;
+            }
+            
+            .no-print {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Опитування студентів IT-спеціальностей</h1>
+            <p>Дізнайтеся більше про себе та отримайте персоналізовані рекомендації</p>
+        </div>
+
+        <div id="survey-app">
+            <div class="survey-section">
+                <h3>Частина 1: Особистість (HEXACO-18)</h3>
+                <p><em>Будь ласка, оцініть, наскільки кожне з наведених тверджень описує вас, використовуючи запропоновану шкалу відповідей (від "Зовсім неточно" до "Дуже точно").</em></p>
+                <div id="hexaco-section"></div>
+            </div>
+
+            <div class="survey-section">
+                <h3>Частина 2: Професійні інтереси (RIASEC)</h3>
+                <p><em>Нижче наведено список різних видів діяльності. Прочитайте кожен пункт і оцініть, наскільки цікавою для вас є ця діяльність (від "Зовсім не цікава" до "Дуже цікава")</em></p>
+                <div id="riasec-section"></div>
+            </div>
+
+            <div class="survey-section">
+                <h3>Частина 3: Рівень стресу (SCL-9-NR)</h3>
+                <p><em>У зв'язку з певними життєвими ситуаціями багато людей стикаються із різними переживаннями, відчуттями і думками. Далі наведено перелік найчастіших станів такого роду. Оцініть, як часто кожен із них був характерним для вас останнім часом (ніколи, зрідка, періодично, майже постійно)</em></p>
+                <div id="scl-section"></div>
+            </div>
+
+            <button class="submit-button no-print" onclick="submitSurvey()">Отримати результати</button>
+            <button class="submit-button no-print" onclick="fillRandomAnswers()" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); margin-top: 10px;">🎲 Заповнити випадковими відповідями</button>
+        </div>
+
+        <div id="results-section" class="results-section"></div>
+    </div>
+
+    <script>
+        // Generate lottery code based on device fingerprint
+        function generateLotteryCode() {
+            const nav = window.navigator;
+            const screen = window.screen;
+            
+            const fingerprint = [
+                nav.userAgent,
+                nav.language,
+                screen.colorDepth,
+                screen.width + 'x' + screen.height,
+                new Date().getTimezoneOffset(),
+                !!window.sessionStorage,
+                !!window.localStorage
+            ].join('|');
+            
+            let hash = 0;
+            for (let i = 0; i < fingerprint.length; i++) {
+                const char = fingerprint.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let code = '';
+            let num = Math.abs(hash);
+            
+            for (let i = 0; i < 6; i++) {
+                code += chars[num % chars.length];
+                num = Math.floor(num / chars.length);
+            }
+            
+            return code;
+        }
+
+        // ANOVA weights
+        const ANOVA_WEIGHTS = {
+            HEXACO: { H: 0.015, E: 0.236, X: 0.061, A: 0.022, C: 0.020, O: 0.334 },
+            RIASEC: { R: 0.052, I: 0.161, A: 0.079, S: 0.260, E: 0.082, C: 0.281 }
+        };
+
+        // IT Role profiles (z-scored)
+        const roleProfiles = {
+            "QA / Тестувальник": {
+                HEXACO: { H: 0.17, E: 0.65, X: 0.25, A: -0.06, C: 0.17, O: 0.77 },
+                RIASEC: { R: -0.31, I: 0.15, A: 0.28, S: 0.68, E: 0.24, C: 0.73 },
+                hexacoDesc: "Висока відкритість та емоційність. Помірна екстраверсія та сумлінність.",
+                riasecDesc: "Високі соціальні (S) та конвенційні (C) інтереси. Низькі реалістичні інтереси."
+            },
+            "Розробник": {
+                HEXACO: { H: -0.05, E: -0.19, X: -0.15, A: 0.21, C: 0.00, O: -0.35 },
+                RIASEC: { R: 0.10, I: -0.36, A: -0.26, S: -0.33, E: 0.00, C: -0.30 },
+                hexacoDesc: "Середні показники по більшості шкал. Низька відкритість та емоційність.",
+                riasecDesc: "Збалансовані інтереси з помірним реалістичним інтересом. Низькі соціальні інтереси."
+            },
+            "Техлід / CTO": {
+                HEXACO: { H: -0.18, E: -0.76, X: 0.45, A: -0.14, C: -0.29, O: -0.53 },
+                RIASEC: { R: 0.30, I: 0.81, A: -0.34, S: -0.56, E: -0.60, C: -0.58 },
+                hexacoDesc: "Висока екстраверсія. Дуже низька емоційність (стресостійкість). Низька відкритість.",
+                riasecDesc: "Високі дослідницькі (I) та реалістичні (R) інтереси. Дуже низькі соціальні та підприємницькі."
+            },
+            "Data Analyst": {
+                HEXACO: { H: 0.10, E: 0.20, X: -0.10, A: 0.15, C: 0.40, O: 0.50 },
+                RIASEC: { R: -0.20, I: 0.75, A: 0.10, S: -0.15, E: 0.05, C: 0.35 },
+                hexacoDesc: "Висока відкритість та сумлінність. Помірна емоційність. Інтровертність.",
+                riasecDesc: "Домінують дослідницькі інтереси (I). Помірні конвенційні. Низькі соціальні та реалістичні."
+            },
+            "DevOps Engineer": {
+                HEXACO: { H: 0.15, E: -0.35, X: -0.05, A: 0.05, C: 0.65, O: 0.20 },
+                RIASEC: { R: 0.55, I: 0.50, A: -0.25, S: -0.35, E: -0.05, C: 0.65 },
+                hexacoDesc: "Дуже висока сумлінність. Низька емоційність (стресостійкість). Помірна чесність та відкритість.",
+                riasecDesc: "Високі реалістичні (R), конвенційні (C) та дослідницькі (I) інтереси. Низькі соціальні та артистичні."
+            },
+            "UX/UI Designer": {
+                HEXACO: { H: 0.10, E: 0.25, X: 0.40, A: 0.45, C: 0.30, O: 0.75 },
+                RIASEC: { R: -0.40, I: 0.20, A: 0.80, S: 0.55, E: 0.25, C: -0.10 },
+                hexacoDesc: "Дуже висока відкритість. Висока приємність та екстраверсія. Помірна емоційність.",
+                riasecDesc: "Домінують артистичні (A) та соціальні (S) інтереси. Дуже низькі реалістичні. Помірні дослідницькі."
+            }
+        };
+
+        const hexacoQuestions = [
+            "Я не буду прикидатися, що хтось мені подобається, тільки щоб ця людина зробила мені послугу",
+            "Мені подобається, коли люди бачать, що я ношу дорогі бренди, аксесуари або останню модель iPhone",
+            "Я хочу, щоб люди знали про мої досягнення та зв'язки",
+            "Навіть у надзвичайній ситуації я не відчуваю паніки",
+            "Коли мене щось дуже засмучує, мені потрібно поговорити про це з кимось, хто мені не байдужий",
+            "Іноді я не можу не переживати щодо якихось дрібниць",
+            "Я відчуваю, що я непопулярна людина",
+            "Я рідко висловлюю свою думку в групових обговореннях",
+            "Більшість людей більш життєрадісні та енергійні, ніж я",
+            "Я рідко тримаю зло, навіть на тих, хто мене сильно образив",
+            "Я зазвичай приймаю недоліки людей, не скаржачись на них",
+            "Мені важко стримувати гнів, коли мене ображають",
+            "Часто, коли я ставлю собі мету, я кидаю її, не досягнувши",
+            "Я часто роблю помилки, бо дію імпульсивно, не подумавши",
+            "Під час навчання я іноді стикаюся з труднощами, тому що мої нотатки та завдання у цілковитому безладі",
+            "Я вважаю, що немає сенсу досліджувати нетрадиційні або експериментальні ідеї",
+            "Мені було б цікаво відвідати музей або якийсь культурний захід",
+            "Мені подобається створювати твори мистецтва, наприклад, вірші, пісні або картини"
+        ];
+
+        const riasecQuestions = [
+            "Збирати або конструювати щось своїми руками",
+            "Ремонтувати або налагоджувати техніку",
+            "Керувати машинами, транспортом або обладнанням",
+            "Читати наукові статті та книжки",
+            "Проводити експерименти та досліди",
+            "Розбиратись у причинах природних або суспільних явищ",
+            "Розробляти дизайн або створювати візуальні матеріали",
+            "Виступати з творчими презентаціями",
+            "Писати креативні або професійні тексти (статті, звіти, презентації)",
+            "Допомагати людям",
+            "Бути ментором інших студентів у їхніх проектах",
+            "Брати участь у громадських або волонтерських заходах",
+            "Керувати людьми або очолювати команду",
+            "Започатковувати власні проекти або бізнес",
+            "Переконувати клієнтів або партнерів у співпраці",
+            "Планувати розклад або графік роботи",
+            "Працювати з даними, таблицями або звітами",
+            "Перевіряти роботу на відповідність вимогам або виявляти помилки"
+        ];
+
+        const sclQuestions = [
+            "Спалахи гніву, яких Ви не могли стримати",
+            "Те, що Ваші почуття легко зачепити",
+            "Відчуття напруженості або збудженості",
+            "Сильне або прискорене серцебиття",
+            "Відчуття страху",
+            "Те, що Вам важко зосередитися",
+            "Пригнічений настрій, \"хандра\"",
+            "Відсутність мотивації",
+            "Відчуття, що Вас зрадили"
+        ];
+
+        const sclLabels = ["Спалахи гніву", "Легко зачепити", "Напруженість", "Серцебиття", "Страх", "Важко зосередитись", "Пригнічений настрій", "Відсутність мотивації", "Відчуття зради"];
+
+        function fillRandomAnswers() {
+            // Fill HEXACO (1-4)
+            for (let i = 0; i < 18; i++) {
+                const randomValue = Math.floor(Math.random() * 4) + 1;
+                document.getElementById(`hex${i}_${randomValue}`).checked = true;
+            }
+            
+            // Fill RIASEC (1-4)
+            for (let i = 0; i < 18; i++) {
+                const randomValue = Math.floor(Math.random() * 4) + 1;
+                document.getElementById(`ria${i}_${randomValue}`).checked = true;
+            }
+            
+            // Fill SCL (0-3)
+            for (let i = 0; i < 9; i++) {
+                const randomValue = Math.floor(Math.random() * 4);
+                document.getElementById(`scl${i}_${randomValue}`).checked = true;
+            }
+            
+            alert('Випадкові відповіді заповнені! Тепер можете отримати результати.');
+        }
+
+        function initializeSurvey() {
+            let hexacoHTML = '';
+            hexacoQuestions.forEach((q, i) => {
+                hexacoHTML += `
+                    <div class="question-block">
+                        <label class="question-label">${i + 1}. ${q}</label>
+                        <div class="radio-group">
+                            <div class="radio-option">
+                                <input type="radio" id="hex${i}_1" name="hex${i}" value="1" onchange="clearValidation(this)">
+                                <label for="hex${i}_1">Зовсім неточно</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="hex${i}_2" name="hex${i}" value="2" onchange="clearValidation(this)">
+                                <label for="hex${i}_2">Швидше неточно</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="hex${i}_3" name="hex${i}" value="3" onchange="clearValidation(this)">
+                                <label for="hex${i}_3">Швидше точно</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="hex${i}_4" name="hex${i}" value="4" onchange="clearValidation(this)">
+                                <label for="hex${i}_4">Дуже точно</label>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('hexaco-section').innerHTML = hexacoHTML;
+
+            let riasecHTML = '';
+            riasecQuestions.forEach((q, i) => {
+                riasecHTML += `
+                    <div class="question-block">
+                        <label class="question-label">${i + 1}. ${q}</label>
+                        <div class="radio-group">
+                            <div class="radio-option">
+                                <input type="radio" id="ria${i}_1" name="ria${i}" value="1" onchange="clearValidation(this)">
+                                <label for="ria${i}_1">Зовсім нецікаво</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="ria${i}_2" name="ria${i}" value="2" onchange="clearValidation(this)">
+                                <label for="ria${i}_2">Швидше нецікаво</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="ria${i}_3" name="ria${i}" value="3" onchange="clearValidation(this)">
+                                <label for="ria${i}_3">Швидше цікаво</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="ria${i}_4" name="ria${i}" value="4" onchange="clearValidation(this)">
+                                <label for="ria${i}_4">Дуже цікаво</label>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('riasec-section').innerHTML = riasecHTML;
+
+            let sclHTML = '';
+            sclQuestions.forEach((q, i) => {
+                sclHTML += `
+                    <div class="question-block">
+                        <label class="question-label">${i + 1}. ${q}</label>
+                        <div class="radio-group">
+                            <div class="radio-option">
+                                <input type="radio" id="scl${i}_0" name="scl${i}" value="0" onchange="clearValidation(this)">
+                                <label for="scl${i}_0">Ніколи</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="scl${i}_1" name="scl${i}" value="1" onchange="clearValidation(this)">
+                                <label for="scl${i}_1">Зрідка</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="scl${i}_2" name="scl${i}" value="2" onchange="clearValidation(this)">
+                                <label for="scl${i}_2">Періодично</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="scl${i}_3" name="scl${i}" value="3" onchange="clearValidation(this)">
+                                <label for="scl${i}_3">Майже постійно</label>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('scl-section').innerHTML = sclHTML;
+        }
+
+        function clearValidation(element) {
+            element.closest('.question-block').classList.remove('unanswered');
+        }
+
+        function calculateWeightedDistance(student, role, dimension) {
+            const weights = ANOVA_WEIGHTS[dimension];
+            let sumSquaredWeighted = 0;
+            
+            for (let trait in weights) {
+                const diff = student[trait] - role[trait];
+                sumSquaredWeighted += weights[trait] * (diff * diff);
+            }
+            
+            return Math.sqrt(sumSquaredWeighted);
+        }
+
+        function interpretHEXACO(hexacoZ) {
+            const interpretations = [];
+            
+            if (hexacoZ.H > 0.5) {
+                interpretations.push("<strong>Чесність-скромність (висока):</strong> Ви уникаєте маніпуляцій, не схильні порушувати правила, не зацікавлені в розкошах.");
+            } else if (hexacoZ.H < -0.5) {
+                interpretations.push("<strong>Чесність-скромність (низька):</strong> Ви схильні до прагматизму, можете використовувати лестощі для досягнення цілей.");
+            }
+            
+            if (hexacoZ.E > 0.5) {
+                interpretations.push("<strong>Емоційність (висока):</strong> Ви відчуваєте страх перед небезпекою, тривогу у стресі, потребуєте емоційної підтримки.");
+            } else if (hexacoZ.E < -0.5) {
+                interpretations.push("<strong>Емоційність (низька):</strong> Ви стресостійкі, не відчуваєте сильних хвилювань.");
+            }
+            
+            if (hexacoZ.X > 0.5) {
+                interpretations.push("<strong>Екстраверсія (висока):</strong> Ви впевнені при виступах, насолоджуєтесь соціальними зустрічами.");
+            } else if (hexacoZ.X < -0.5) {
+                interpretations.push("<strong>Інтроверсія:</strong> Ви віддаєте перевагу самостійній роботі, відчуваєте незручність у центрі уваги.");
+            }
+            
+            if (hexacoZ.A > 0.5) {
+                interpretations.push("<strong>Приємність (висока):</strong> Ви прощаєте образи, готові до компромісів та співпраці.");
+            } else if (hexacoZ.A < -0.5) {
+                interpretations.push("<strong>Приємність (низька):</strong> Ви критичні до недоліків інших, наполегливо відстоюєте свою позицію.");
+            }
+            
+            if (hexacoZ.C > 0.5) {
+                interpretations.push("<strong>Сумлінність (висока):</strong> Ви організовуєте час та простір, дисципліновано працюєте.");
+            } else if (hexacoZ.C < -0.5) {
+                interpretations.push("<strong>Сумлінність (низька):</strong> Ви не переймаєтесь порядком, діє імпульсивно.");
+            }
+            
+            if (hexacoZ.O > 0.5) {
+                interpretations.push("<strong>Відкритість до нового (висока):</strong> Ви захоплюєтесь мистецтвом, допитливі, вільно використовуєте уяву.");
+            } else if (hexacoZ.O < -0.5) {
+                interpretations.push("<strong>Відкритість до нового (низька):</strong> Ви віддаєте перевагу практичному, не відчуваєте інтелектуальної цікавості.");
+            }
+            
+            return interpretations.length > 0 ? interpretations.join('<br><br>') : "Ваші показники в середньому діапазоні.";
+        }
+
+        function interpretRIASEC(riasecZ) {
+            const interpretations = [];
+            const types = [
+                { key: 'R', name: 'Реалістичний', high: 'практичну роботу з інструментами, технікою', low: 'практичну фізичну роботу' },
+                { key: 'I', name: 'Дослідницький', high: 'аналіз, дослідження, вирішення складних проблем', low: 'глибокий аналіз' },
+                { key: 'A', name: 'Артистичний', high: 'творчість, дизайн, креативне самовираження', low: 'творчу діяльність' },
+                { key: 'S', name: 'Соціальний', high: 'допомогу людям, навчання, командну роботу', low: 'інтенсивну соціальну взаємодію' },
+                { key: 'E', name: 'Підприємницький', high: 'лідерство, управління, переконування', low: 'лідерство та управління' },
+                { key: 'C', name: 'Конвенційний', high: 'організацію, структуру, роботу з даними', low: 'рутинну організаційну роботу' }
+            ];
+            
+            types.forEach(type => {
+                if (riasecZ[type.key] > 0.5) {
+                    interpretations.push(`<strong>${type.name} тип (високий):</strong> Вам цікава ${type.high}.`);
+                } else if (riasecZ[type.key] < -0.5) {
+                    interpretations.push(`<strong>${type.name} тип (низький):</strong> Вам менш цікава ${type.low}.`);
+                }
+            });
+            
+            return interpretations.length > 0 ? interpretations.join('<br><br>') : "Ваші професійні інтереси збалансовані.";
+        }
+
+        function submitSurvey() {
+            // Clear previous validation
+            document.querySelectorAll('.question-block').forEach(block => {
+                block.classList.remove('unanswered');
+            });
+            
+            let allAnswered = true;
+            
+            const hexacoScores = [];
+            for (let i = 0; i < 18; i++) {
+                const val = document.querySelector(`input[name="hex${i}"]:checked`)?.value;
+                if (!val) {
+                    document.querySelectorAll(`input[name="hex${i}"]`)[0].closest('.question-block').classList.add('unanswered');
+                    allAnswered = false;
+                } else {
+                    hexacoScores.push(parseInt(val));
+                }
+            }
+
+            const riasecScores = [];
+            for (let i = 0; i < 18; i++) {
+                const val = document.querySelector(`input[name="ria${i}"]:checked`)?.value;
+                if (!val) {
+                    document.querySelectorAll(`input[name="ria${i}"]`)[0].closest('.question-block').classList.add('unanswered');
+                    allAnswered = false;
+                } else {
+                    riasecScores.push(parseInt(val));
+                }
+            }
+
+            const sclScores = [];
+            for (let i = 0; i < 9; i++) {
+                const val = document.querySelector(`input[name="scl${i}"]:checked`)?.value;
+                if (!val) {
+                    document.querySelectorAll(`input[name="scl${i}"]`)[0].closest('.question-block').classList.add('unanswered');
+                    allAnswered = false;
+                } else {
+                    sclScores.push(parseInt(val));
+                }
+            }
+            
+            if (!allAnswered) {
+                alert('Будь ласка, відповідайте на всі питання (питання без відповіді виділені червоним)');
+                document.querySelector('.question-block.unanswered').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
+
+            const hexaco = {
+                H: (hexacoScores[0] + hexacoScores[1] + hexacoScores[2]) / 3,
+                E: (hexacoScores[3] + hexacoScores[4] + hexacoScores[5]) / 3,
+                X: (hexacoScores[6] + hexacoScores[7] + hexacoScores[8]) / 3,
+                A: (hexacoScores[9] + hexacoScores[10] + hexacoScores[11]) / 3,
+                C: (hexacoScores[12] + hexacoScores[13] + hexacoScores[14]) / 3,
+                O: (hexacoScores[15] + hexacoScores[16] + hexacoScores[17]) / 3
+            };
+
+            const riasec = {
+                R: riasecScores[0] + riasecScores[1] + riasecScores[2],
+                I: riasecScores[3] + riasecScores[4] + riasecScores[5],
+                A: riasecScores[6] + riasecScores[7] + riasecScores[8],
+                S: riasecScores[9] + riasecScores[10] + riasecScores[11],
+                E: riasecScores[12] + riasecScores[13] + riasecScores[14],
+                C: riasecScores[15] + riasecScores[16] + riasecScores[17]
+            };
+
+            const hexacoMeans = { H: 3.0, E: 2.8, X: 3.1, A: 2.9, C: 3.0, O: 3.2 };
+            const hexacoSDs = { H: 0.6, E: 0.7, X: 0.7, A: 0.6, C: 0.7, O: 0.6 };
+            const riasecMeans = { R: 7.5, I: 8.0, A: 7.0, S: 8.5, E: 7.5, C: 8.0 };
+            const riasecSDs = { R: 2.0, I: 2.2, A: 2.1, S: 2.0, E: 2.1, C: 2.0 };
+
+            const hexacoZ = {};
+            for (let trait in hexaco) {
+                hexacoZ[trait] = (hexaco[trait] - hexacoMeans[trait]) / hexacoSDs[trait];
+            }
+
+            const riasecZ = {};
+            for (let trait in riasec) {
+                riasecZ[trait] = (riasec[trait] - riasecMeans[trait]) / riasecSDs[trait];
+            }
+
+            const sclTotal = sclScores.reduce((a, b) => a + b, 0);
+
+            const roleDistances = [];
+            for (let role in roleProfiles) {
+                const hexacoDist = calculateWeightedDistance(hexacoZ, roleProfiles[role].HEXACO, 'HEXACO');
+                const riasecDist = calculateWeightedDistance(riasecZ, roleProfiles[role].RIASEC, 'RIASEC');
+                const totalDist = Math.sqrt(hexacoDist * hexacoDist + riasecDist * riasecDist);
+                
+                roleDistances.push({
+                    role: role,
+                    distance: totalDist,
+                    hexacoDist: hexacoDist,
+                    riasecDist: riasecDist
+                });
+            }
+
+            roleDistances.sort((a, b) => a.distance - b.distance);
+            displayResults(hexaco, riasec, hexacoZ, riasecZ, roleDistances, sclTotal, sclScores);
+        }
+
+        function getComparison(zScore) {
+            if (zScore > 0.5) return '<span class="comparison above-avg">Вище середнього ▲</span>';
+            if (zScore < -0.5) return '<span class="comparison below-avg">Нижче середнього ▼</span>';
+            return '<span class="comparison average">Середнє ●</span>';
+        }
+
+        function displayResults(hexaco, riasec, hexacoZ, riasecZ, roleDistances, sclTotal, sclScores) {
+            const resultsDiv = document.getElementById('results-section');
+            
+            const hexacoNames = {
+                H: 'Чесність-Скромність',
+                E: 'Емоційність',
+                X: 'Екстраверсія',
+                A: 'Приємність',
+                C: 'Сумлінність',
+                O: 'Відкритість до нового'
+            };
+
+            const riasecNames = {
+                R: 'Реалістичний',
+                I: 'Дослідницький',
+                A: 'Артистичний',
+                S: 'Соціальний',
+                E: 'Підприємницький',
+                C: 'Конвенційний'
+            };
+            
+            let html = '<h2 style="text-align: center; color: #667eea; margin-bottom: 30px;">Ваші результати</h2>';
+            
+            // LOTTERY NUMBER AT THE BEGINNING
+            const lotteryCode = generateLotteryCode();
+            html += `
+                <div class="lottery-code">
+                    <h3>🎉 Ваш лотерейний номер</h3>
+                    <div class="code">${lotteryCode}</div>
+                    <p style="font-size: 0.9em; color: #5c4a1a; margin-top: 10px;">Збережіть цей номер для участі в розіграші призів!</p>
+                </div>
+            `;
+            
+            // HEXACO Results with table
+            html += `
+                <div class="result-card">
+                    <h3>🧩 Профіль особистості HEXACO</h3>
+                    <p style="margin-bottom: 15px;">Ваші особистісні риси:</p>
+                    <table class="score-table">
+                        <thead>
+                            <tr>
+                                <th>Риса</th>
+                                <th>Бал (1-5)</th>
+                                <th>Z-оцінка</th>
+                                <th>Порівняння</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            Object.keys(hexaco).forEach(scale => {
+                const z = hexacoZ[scale];
+                html += `
+                    <tr>
+                        <td><strong>${hexacoNames[scale]}</strong></td>
+                        <td>${hexaco[scale].toFixed(2)}</td>
+                        <td>${z.toFixed(2)}</td>
+                        <td>${getComparison(z)}</td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                        </tbody>
+                    </table>
+                    <div class="profile-description">
+                        ${interpretHEXACO(hexacoZ).split('\n\n').map(p => `<p style="margin-bottom: 10px;">${p}</p>`).join('')}
+                    </div>
+                </div>
+            `;
+            
+            // RIASEC Results - SHOW ALL ROLES PROXIMITY FIRST
+            html += `
+                <div class="result-card">
+                    <h3>💼 Професійні інтереси RIASEC</h3>
+                    
+                    <h4 style="margin: 20px 0 15px 0; color: #667eea;">Близькість до всіх типів:</h4>
+                    <table class="score-table">
+                        <thead>
+                            <tr>
+                                <th>Тип</th>
+                                <th>Бал (3-15)</th>
+                                <th>Z-оцінка</th>
+                                <th>Порівняння</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            Object.keys(riasec).forEach(scale => {
+                const z = riasecZ[scale];
+                html += `
+                    <tr>
+                        <td><strong>${riasecNames[scale]}</strong></td>
+                        <td>${riasec[scale]}</td>
+                        <td>${z.toFixed(2)}</td>
+                        <td>${getComparison(z)}</td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                        </tbody>
+                    </table>
+                    
+                    <h4 style="margin: 25px 0 15px 0; color: #667eea;">Найближчий тип:</h4>
+                    <div class="profile-description">
+            `;
+            
+            // Find highest RIASEC score
+            let maxRiasec = { key: 'R', value: riasec.R };
+            for (let key in riasec) {
+                if (riasec[key] > maxRiasec.value) {
+                    maxRiasec = { key: key, value: riasec[key] };
+                }
+            }
+            
+            html += `
+                        <p><strong>🌟 ${riasecNames[maxRiasec.key]}</strong> (${maxRiasec.value} балів з 15)</p>
+                        ${interpretRIASEC(riasecZ).split('\n\n').map(p => `<p style="margin-top: 10px;">${p}</p>`).join('')}
+                    </div>
+                </div>
+            `;
+
+            // Best match role
+            const bestRole = roleDistances[0];
+            html += `
+                <div class="result-card">
+                    <h3>🎯 Найкраща відповідність: ${bestRole.role}</h3>
+                    <p><strong>Відстань до профілю:</strong> ${bestRole.distance.toFixed(3)}</p>
+                    
+                    <h4 style="margin-top: 20px;">Характеристика профілю ${bestRole.role}:</h4>
+                    <div class="profile-description">
+                        <p><strong>HEXACO:</strong> ${roleProfiles[bestRole.role].hexacoDesc}</p>
+                        <p style="margin-top: 10px;"><strong>RIASEC:</strong> ${roleProfiles[bestRole.role].riasecDesc}</p>
+                    </div>
+                </div>
+            `;
+
+            // All roles ranking
+            html += `
+                <div class="result-card">
+                    <h3>📊 Рейтинг відповідності ролям</h3>
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Позиція</th>
+                                <th>Роль</th>
+                                <th>Відстань</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            roleDistances.forEach((rd, i) => {
+                html += `
+                    <tr>
+                        <td>${i + 1}</td>
+                        <td><strong>${rd.role}</strong></td>
+                        <td>${rd.distance.toFixed(3)}</td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            // Spider charts
+            html += `
+                <div class="result-card">
+                    <h3>🕸️ Візуалізація профілів</h3>
+                    <div class="radar-container">
+                        <canvas id="hexacoRadar"></canvas>
+                    </div>
+                    <div class="radar-container">
+                        <canvas id="riasecRadar"></canvas>
+                    </div>
+                </div>
+            `;
+
+            // Stress level
+            const stressLevel = sclTotal < 8 ? "Низький" : sclTotal < 15 ? "Помірний" : "Високий";
+            html += `
+                <div class="result-card">
+                    <h3>😰 Рівень стресу</h3>
+                    <p><strong>Загальний бал:</strong> ${sclTotal} з 27 (${stressLevel})</p>
+                    
+                    <h4 style="margin-top: 20px;">Детальний розбір:</h4>
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Симптом</th>
+                                <th>Ваш рівень</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            sclScores.forEach((score, i) => {
+                const level = ['Відсутній', 'Низький', 'Помірний', 'Високий'][score];
+                const className = score === 0 ? 'stress-low' : score >= 2 ? 'stress-high' : '';
+                html += `
+                    <tr>
+                        <td><strong>${sclLabels[i]}</strong></td>
+                        <td><span class="${className}">${level} (${score}/3)</span></td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                        </tbody>
+                    </table>
+            `;
+            
+            // Stress recommendations
+            if (sclTotal > 15) {
+                html += `
+                    <div class="warning-box">
+                        <h4>⚠️ Важливо!</h4>
+                        <p>Ваш рівень стресу високий. Рекомендуємо:</p>
+                        <ul>
+                            <li>Звернутися до психологічної служби університету</li>
+                            <li>Практикувати техніки релаксації</li>
+                            <li>Налагодити режим сну (7-9 годин)</li>
+                            <li>Регулярна фізична активність</li>
+                        </ul>
+                    </div>
+                `;
+            } else if (sclTotal >= 8) {
+                html += `
+                    <div class="warning-box">
+                        <h4>💡 Рекомендації</h4>
+                        <ul>
+                            <li>Підтримуйте баланс між навчанням та відпочинком</li>
+                            <li>Використовуйте техніки тайм-менеджменту</li>
+                            <li>Регулярно займайтесь спортом</li>
+                        </ul>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="strength-box">
+                        <h4>✅ Відмінно!</h4>
+                        <p>Ваш рівень стресу низький. Продовжуйте підтримувати здоровий баланс!</p>
+                    </div>
+                `;
+            }
+            
+            html += `</div>`;
+
+            // Disclaimer
+            html += `
+                <div class="disclaimer no-print">
+                    <h4>⚠️ Застереження</h4>
+                    <p>Цей опитувальник призначений виключно для дослідницьких та освітніх цілей. Результати надають загальну інформацію про ваші особистісні характеристики та професійні інтереси, але не є психологічним діагнозом.</p>
+                    <p style="margin-top: 10px;">Результати базуються на самооцінці та можуть змінюватися залежно від вашого поточного стану та життєвих обставин. Для отримання професійної консультації зверніться до кваліфікованих психологів або кар'єрних консультантів.</p>
+                    <p style="margin-top: 10px;"><strong>Конфіденційність:</strong> Ваші відповіді використовуються виключно для академічних досліджень у знеобличеній формі.</p>
+                </div>
+            `;
+
+            // Print button
+            html += `
+                <button class="print-button no-print" onclick="window.print()">
+                    🖨️ Роздрукувати результати
+                </button>
+            `;
+
+            resultsDiv.innerHTML = html;
+            resultsDiv.classList.add('visible');
+            resultsDiv.scrollIntoView({ behavior: 'smooth' });
+
+            // Create radar charts
+            setTimeout(() => {
+                const top3Roles = roleDistances.slice(0, 3);
+                createMultiRoleRadarChart('hexacoRadar', hexacoZ, top3Roles, 
+                    ['H', 'E', 'X', 'A', 'C', 'O'],
+                    ['Чесність', 'Емоційність', 'Екстраверсія', 'Приємність', 'Сумлінність', 'Відкритість'],
+                    'HEXACO: Ви + 3 найближчі ролі');
+                
+                createMultiRoleRadarChart('riasecRadar', riasecZ, top3Roles,
+                    ['R', 'I', 'A', 'S', 'E', 'C'],
+                    ['Реалістичний', 'Дослідницький', 'Артистичний', 'Соціальний', 'Підприємницький', 'Конвенційний'],
+                    'RIASEC: Ви + 3 найближчі ролі');
+            }, 100);
+        }
+
+        function createMultiRoleRadarChart(canvasId, studentData, topRoles, traitKeys, labels, title) {
+            const ctx = document.getElementById(canvasId);
+            if (!ctx) return;
+
+            const studentValues = traitKeys.map(key => studentData[key]);
+
+            const datasets = [
+                {
+                    label: 'Ви',
+                    data: studentValues,
+                    backgroundColor: 'rgba(231, 76, 60, 0.25)',
+                    borderColor: 'rgba(231, 76, 60, 1)',
+                    borderWidth: 3,
+                    pointBackgroundColor: 'rgba(231, 76, 60, 1)',
+                    pointBorderColor: '#fff',
+                    pointRadius: 5
+                }
+            ];
+
+            const roleColors = [
+                { bg: 'rgba(52, 152, 219, 0.15)', border: 'rgba(52, 152, 219, 1)' },
+                { bg: 'rgba(46, 204, 113, 0.15)', border: 'rgba(46, 204, 113, 1)' },
+                { bg: 'rgba(155, 89, 182, 0.15)', border: 'rgba(155, 89, 182, 1)' }
+            ];
+
+            topRoles.forEach((roleInfo, idx) => {
+                const roleName = roleInfo.role;
+                const dimension = canvasId.includes('hexaco') ? 'HEXACO' : 'RIASEC';
+                const roleProfile = roleProfiles[roleName][dimension];
+                const roleValues = traitKeys.map(key => roleProfile[key]);
+
+                datasets.push({
+                    label: roleName,
+                    data: roleValues,
+                    backgroundColor: roleColors[idx].bg,
+                    borderColor: roleColors[idx].border,
+                    borderWidth: 2,
+                    pointBackgroundColor: roleColors[idx].border,
+                    pointBorderColor: '#fff',
+                    pointRadius: 4
+                });
+            });
+
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: labels,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: title,
+                            font: { size: 14, weight: 'bold' },
+                            padding: 15
+                        },
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: { size: 11 },
+                                padding: 10,
+                                usePointStyle: true
+                            }
+                        }
+                    },
+                    scales: {
+                        r: {
+                            min: -2,
+                            max: 2,
+                            ticks: {
+                                stepSize: 1,
+                                font: { size: 9 },
+                                backdropColor: 'rgba(255, 255, 255, 0.75)',
+                                callback: function(value) {
+                                    return value.toFixed(0);
+                                }
+                            },
+                            pointLabels: {
+                                font: { size: 10 },
+                                color: '#2c3e50'
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        window.addEventListener('load', initializeSurvey);
+        document.addEventListener('DOMContentLoaded', initializeSurvey);
+    </script>
+</body>
+</html>
