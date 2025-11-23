@@ -473,7 +473,6 @@
             </div>
 
             <button class="submit-button no-print" onclick="submitSurvey()">Отримати результати</button>
-            <button class="submit-button no-print" onclick="fillRandomAnswers()" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); margin-top: 10px;">🎲 Заповнити випадковими відповідями</button>
         </div>
 
         <div id="results-section" class="results-section"></div>
@@ -668,28 +667,6 @@
         ];
 
         const sclLabels = ["Спалахи гніву", "Легко зачепити", "Напруженість", "Серцебиття", "Страх", "Важко зосередитись", "Пригнічений настрій", "Відсутність мотивації", "Відчуття зради"];
-
-        function fillRandomAnswers() {
-            // Fill HEXACO (1-4)
-            for (let i = 0; i < 18; i++) {
-                const randomValue = Math.floor(Math.random() * 4) + 1;
-                document.getElementById(`hex${i}_${randomValue}`).checked = true;
-            }
-            
-            // Fill RIASEC (1-4)
-            for (let i = 0; i < 18; i++) {
-                const randomValue = Math.floor(Math.random() * 4) + 1;
-                document.getElementById(`ria${i}_${randomValue}`).checked = true;
-            }
-            
-            // Fill SCL (0-3)
-            for (let i = 0; i < 9; i++) {
-                const randomValue = Math.floor(Math.random() * 4);
-                document.getElementById(`scl${i}_${randomValue}`).checked = true;
-            }
-            
-            alert('Випадкові відповіді заповнені! Тепер можете отримати результати.');
-        }
 
         function initializeSurvey() {
             let hexacoHTML = '';
